@@ -43,7 +43,7 @@ def main():
     if args.pdf or args.pdf_only:
         trace("Converting...")
         
-        for vol_num in range(DEFAULT_VSTART, DEFAULT_VEND):
+        for vol_num in range(DEFAULT_VSTART, DEFAULT_VEND + 1):
             create_pdf(manga, manga.name, PDF_FILE_NAME.format(manga.name, vol_num), vol_num)
 
 if __name__ == '__main__':
