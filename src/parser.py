@@ -22,7 +22,7 @@ class ParserException(Exception):
 # ------------------------------------------------------------------------------
 
 class Chapter:
-    link_regexpr = re.compile(r"https://h\d+\.rmr\.rocks/auto(/\d+){3}/[^\[\]]+(jpg|png)\?t=\d+&u=\d+&h=\S{22}")
+    link_regexpr = re.compile(r"https://h\d+.?\.rmr\.rocks/auto(/\d+){3}/[^\[\]]+(jpg|png)\?t=\d+&u=\d+&h=\S{22}")
     def __init__ (self, url: str, count: int, volume: int):
         self.url = url
         self.volume = volume
@@ -38,6 +38,8 @@ class Chapter:
         script = str(script).split("\n")[5]
         for x in [",", "'", "\""]:
             script = script.replace(x, "")
+
+        print(script, file=open("tag.html", "w"), flush=True)
             
         self.links = [x.group(0) for x in re.finditer(self.link_regexpr, script)]
         # The number of pages
