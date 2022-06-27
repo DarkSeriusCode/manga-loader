@@ -39,7 +39,7 @@ def create_pdf(manga, manga_path: str, fname: str, volume_num: int):
             canv.setPageSize(size)
             canv.drawImage(file, 0, 0)
         else:
-            canv.setPageSize((size[0], 10))
+            canv.setPageSize((size[0], 60))
         canv.showPage()
         bar.next()
     bar.finish()

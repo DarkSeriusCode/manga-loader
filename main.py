@@ -28,7 +28,7 @@ def main():
     DEFAULT_END = args.end or manga.ch_count
     DEFAULT_VSTART = args.vstart or 1
     DEFAULT_VEND = args.vend or manga.vol_count
-    PDF_FILE_NAME = "{0}/{0} vol {1}.pdf"
+    PDF_FILE_NAME = "{0}/{0} том {1}.pdf"
     trace("Found!")
 
     print("\n\nAbout:")
