@@ -7,12 +7,20 @@ from src.converter import create_pdf
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument("url")
-    argparser.add_argument("-s", type=int, dest="start")
-    argparser.add_argument("-e", type=int, dest="end")
-    argparser.add_argument("--pdf", dest="pdf", action="store_true")
-    argparser.add_argument("--pdf-only", dest="pdf_only", action="store_true")
-    argparser.add_argument("--vol-start", dest="vstart", type=int)
-    argparser.add_argument("--vol-end", dest="vend", type=int)
+    argparser.add_argument("-s", type=int, dest="start", 
+        help="The number of the first chapter for download")
+    argparser.add_argument("-e", type=int, dest="end", 
+        help="The number of the last chapter for download")
+    argparser.add_argument("--info-only", dest="info_only", action="store_true", 
+        help="Shows only info about manga, not downloading")
+    argparser.add_argument("--pdf", dest="pdf", action="store_true", 
+        help="Converts the manga to a `.pdf` file after downloading. (Converts each volume into a new file)")
+    argparser.add_argument("--pdf-only", dest="pdf_only", action="store_true", 
+        help="Converts the manga to `.pdf` without downloading")
+    argparser.add_argument("--vol-start", dest="vstart", type=int, 
+        help="The number of the first volume for converting")
+    argparser.add_argument("--vol-end", dest="vend", type=int, 
+        help="The number of the last volume for converting")
     args = argparser.parse_args()
 
     if (args.start and args.end) and (args.start > args.end):
@@ -35,6 +43,15 @@ def main():
     info(f"Title: {manga.name}")
     info(f"Chapters: {manga.ch_count}")
     info(f"Volumes: {manga.vol_count}\n")
+
+    if args.info_only:
+        print("Volumes:")
+        for vol_num, ch_nums in manga.volumes.items():
+            if len(ch_nums) <= 1:
+                info(f"{vol_num}: only {ch_nums[0]} chapter.")
+                continue
+            info(f"{vol_num}: {ch_nums[0]}-{ch_nums[-1]} chapter.")                
+        return
 
     if not args.pdf_only:
         trace(f"Downloading from {DEFAULT_START} ch to {DEFAULT_END} ch")

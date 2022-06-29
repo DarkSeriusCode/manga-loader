@@ -38,8 +38,6 @@ class Chapter:
         script = str(script).split("\n")[5]
         for x in [",", "'", "\""]:
             script = script.replace(x, "")
-
-        print(script, file=open("tag.html", "w"), flush=True)
             
         self.links = [x.group(0) for x in re.finditer(self.link_regexpr, script)]
         # The number of pages
@@ -74,7 +72,7 @@ class Manga:
         try:
             resp = requests.get(url, headers=REQUEST_HEADER)
             if resp.status_code != 200: 
-                raise ServerError(f"Incorrect server response ({resp.status_code})")
+                raise ParserException(f"Incorrect server response ({resp.status_code})")
         except requests.exceptions:
             raise ParserException("Cannot send a request to the server!")
         self.parser = BeautifulSoup(resp.text, "html.parser")

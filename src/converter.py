@@ -5,42 +5,47 @@ from typing import List
 from PIL import Image
 from reportlab.pdfgen import canvas
 from progress.bar import IncrementalBar
+from collections import namedtuple
 
 # ------------------------------------------------------------------------------
 
 FILES_SORT_KEY = lambda x: int(os.path.basename(x).split(".")[0])
 FILES_FIND_PATH = "%s/Chapter №%d/*.[jp][pn]g"
+ChapterInfo = namedtuple("ChapterInfo", ["num", "images"])
 
 # ------------------------------------------------------------------------------
 
 def create_pdf(manga, manga_path: str, fname: str, volume_num: int):
     """Creates the .pdf file from volume's chapters"""
     chapter_numbers = manga.volumes[volume_num]
-    files = []
+    chapter_list = []
 
     # Getting images to compile into .pdf
     for ch_num in chapter_numbers:
-        files_iter = iglob(FILES_FIND_PATH % (manga_path, ch_num))
-        files.extend(sorted(files_iter, key=FILES_SORT_KEY))
-        # Adding a empty page
-        if len(files) > 0: files.append(None)
+        ch_path = FILES_FIND_PATH % (manga_path, ch_num)
+        ch = ChapterInfo(ch_num, sorted(iglob(ch_path), key=FILES_SORT_KEY))
+        if len(ch.images) == 0: continue
+        chapter_list.append(ch)
 
     # If the volume has not been loaded
-    if len(files) == 0: return
+    if len(chapter_list) == 0: return
 
     canv = canvas.Canvas(fname)
-    bar = IncrementalBar(f"Creating .pdf from {volume_num} vol", max=len(files))
+    text = f"Creating .pdf from {volume_num} vol..."
+    bar = IncrementalBar(text, max=sum(len(x.images) for x in chapter_list))
 
-    for file_num, file in enumerate(files, 0):
-        if file:
+    for chapter in chapter_list:
+        for page in chapter.images:
+            # If page is first in the list
+            if page == chapter.images[0]: 
+                key = str(chapter.num)
+                canv.bookmarkPage(key)
+                canv.addOutlineEntry(f"Глава {chapter.num}", key)
             # Getting the image size
-            img = Image.open(file)
-            size = (img.width, img.height)
-            canv.setPageSize(size)
-            canv.drawImage(file, 0, 0)
-        else:
-            canv.setPageSize((size[0], 60))
-        canv.showPage()
-        bar.next()
+            img = Image.open(page)
+            canv.setPageSize((img.width, img.height))
+            canv.drawImage(page, 0, 0)
+            canv.showPage()
+            bar.next()
     bar.finish()
     canv.save()
