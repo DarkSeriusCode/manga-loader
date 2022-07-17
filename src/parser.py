@@ -15,15 +15,17 @@ REQUEST_HEADER = {
 # ------------------------------------------------------------------------------
 
 class ParserException(Exception):
-    def __init__ (self, text):
+    def __init__(self, text):
         self.text = f"\033[31m{text}\033[0m"
         super().__init__(self.text)
 
 # ------------------------------------------------------------------------------
 
 class Chapter:
-    link_regexpr = re.compile(r"https://h\d+.?\.rmr\.rocks/auto(/\d+){3}/[^\[\]]+(jpg|png)\?t=\d+&u=\d+&h=\S{22}")
-    def __init__ (self, url: str, count: int, volume: int):
+    link_regexpr = re.compile(
+        r"https://h\d+.?\.rmr\.rocks/auto(/\d+){3}/[^\[\]]+(jpg|png)\?t=\d+&u=\d+&h=\S{22}")
+
+    def __init__(self, url: str, count: int, volume: int):
         self.url = url
         self.volume = volume
         self.count = count
@@ -38,12 +40,13 @@ class Chapter:
         script = str(script).split("\n")[5]
         for x in [",", "'", "\""]:
             script = script.replace(x, "")
-            
-        self.links = [x.group(0) for x in re.finditer(self.link_regexpr, script)]
+
+        self.links = [x.group(0)
+                      for x in re.finditer(self.link_regexpr, script)]
         # The number of pages
         self.size = len(self.links)
 
-    def download (self, path: str="./"):
+    def download(self, path: str = "./"):
         """Loads chapter as group of images"""
         load_path = f"{path}/Chapter №{self.count}/"
         bar = IncrementalBar(f"Loading chapter {self.count}", max=self.size)
@@ -55,23 +58,25 @@ class Chapter:
             if response.status_code == 200:
                 with open(f"{load_path}{num}.{ext}", "wb") as f:
                     response.raw.decode_content = True
-                    shutil.copyfileobj(response.raw, f) 
+                    shutil.copyfileobj(response.raw, f)
             bar.next()
         bar.finish()
 
 # ------------------------------------------------------------------------------
 
+
 class Manga:
-    SUPPORTED_DOMAINS = ["https://readmanga.live", "https://mintmanga.live", 
+    SUPPORTED_DOMAINS = ["https://readmanga.live", "https://mintmanga.live",
                          "https://readmanga.io"]
-    def __init__ (self, url: str):
+
+    def __init__(self, url: str):
         self.url = url
         self.chapters = []
         self.chapters_names = []
 
         try:
             resp = requests.get(url, headers=REQUEST_HEADER)
-            if resp.status_code != 200: 
+            if resp.status_code != 200:
                 raise ParserException(f"Incorrect server response ({resp.status_code})")
         except requests.exceptions:
             raise ParserException("Cannot send a request to the server!")
@@ -82,13 +87,14 @@ class Manga:
 
         try:
             # Getting manga name
-            self.name = self.parser.find("meta", {"itemprop": "name"}).attrs["content"]
+            self.name = self.parser.find(
+                "meta", {"itemprop": "name"}).attrs["content"]
         except AttributeError:
             raise ParserException("The URL is incorrect")
 
         # Getting the domain and checking it for validity
         self.domain = "https://" + url.split("/")[2]
-        if self.domain not in self.SUPPORTED_DOMAINS: 
+        if self.domain not in self.SUPPORTED_DOMAINS:
             raise ParserException(self.domain + " is unsupported domain!")
 
         # Getting a chapter links and their number
@@ -98,7 +104,7 @@ class Manga:
         self.volumes = self.get_volumes()
 
     def get_volumes(self) -> Dict[int, List[int]]:
-        """Returns a dict containing the number of each chapter in the volume""" 
+        """Returns a dict containing the number of each chapter in the volume"""
         volumes = {}
         for ch_num, link in enumerate(self.chapters_links, 1):
             vol_num = self.__get_volume_from_link(link)
@@ -110,14 +116,14 @@ class Manga:
         """Gets the volume number from URL"""
         return int(link.split("/")[-2].replace("vol", ""))
 
-    def get_chapters_links (self) -> List[Chapter]:
+    def get_chapters_links(self) -> List[Chapter]:
         """Gets manga chapters"""
         tag_class = "chapter-link cp-l manga-mtr" if self.is_mtr else "chapter-link cp-l"
         tags = self.parser.findAll("a", {"class": tag_class})
         links = []
         for tag in tags:
             links.append(self.domain + tag.attrs["href"])
-        return links[::-1]    
+        return links[::-1]
 
     def chapters_iter(self, start: int, end: int):
         """Generator that creates a Chapter objects in range [start;end]"""
@@ -127,7 +133,7 @@ class Manga:
             chapter = Chapter(chapter_link, num, chapter_volume)
             yield chapter
 
-    def download(self, start: int, end: int, path: str="./"):
+    def download(self, start: int, end: int, path: str = "./"):
         """Loads the chapters from start to end. Where start and end are the 
         chapter numbers. NOT indexes in list!"""
         for chapter in self.chapters_iter(start, end):

@@ -24,11 +24,13 @@ def create_pdf(manga, manga_path: str, fname: str, volume_num: int):
     for ch_num in chapter_numbers:
         ch_path = FILES_FIND_PATH % (manga_path, ch_num)
         ch = ChapterInfo(ch_num, sorted(iglob(ch_path), key=FILES_SORT_KEY))
-        if len(ch.images) == 0: continue
+        if len(ch.images) == 0: 
+            continue
         chapter_list.append(ch)
 
     # If the volume has not been loaded
-    if len(chapter_list) == 0: return
+    if len(chapter_list) == 0:
+        return
 
     canv = canvas.Canvas(fname)
     text = f"Creating .pdf from {volume_num} vol..."
@@ -41,6 +43,7 @@ def create_pdf(manga, manga_path: str, fname: str, volume_num: int):
                 key = str(chapter.num)
                 canv.bookmarkPage(key)
                 canv.addOutlineEntry(f"Глава {chapter.num}", key)
+                
             # Getting the image size
             img = Image.open(page)
             canv.setPageSize((img.width, img.height))

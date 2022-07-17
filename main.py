@@ -4,23 +4,24 @@ from src import parser
 from src.pretty_console_logs import *
 from src.converter import create_pdf
 
+
 def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument("url")
-    argparser.add_argument("-s", type=int, dest="start", 
-        help="The number of the first chapter for download")
-    argparser.add_argument("-e", type=int, dest="end", 
-        help="The number of the last chapter for download")
-    argparser.add_argument("--info-only", dest="info_only", action="store_true", 
-        help="Shows only info about manga, not downloading")
-    argparser.add_argument("--pdf", dest="pdf", action="store_true", 
-        help="Converts the manga to a `.pdf` file after downloading. (Converts each volume into a new file)")
-    argparser.add_argument("--pdf-only", dest="pdf_only", action="store_true", 
-        help="Converts the manga to `.pdf` without downloading")
-    argparser.add_argument("--vol-start", dest="vstart", type=int, 
-        help="The number of the first volume for converting")
-    argparser.add_argument("--vol-end", dest="vend", type=int, 
-        help="The number of the last volume for converting")
+    argparser.add_argument("-s", type=int, dest="start",
+                           help="The number of the first chapter for download")
+    argparser.add_argument("-e", type=int, dest="end",
+                           help="The number of the last chapter for download")
+    argparser.add_argument("--info-only", dest="info_only", action="store_true",
+                           help="Shows only info about manga, not downloading")
+    argparser.add_argument("--pdf", dest="pdf", action="store_true",
+                           help="Converts the manga to a `.pdf` file after downloading. (Converts each volume into a new file)")
+    argparser.add_argument("--pdf-only", dest="pdf_only", action="store_true",
+                           help="Converts the manga to `.pdf` without downloading")
+    argparser.add_argument("--vol-start", dest="vstart", type=int,
+                           help="The number of the first volume for converting")
+    argparser.add_argument("--vol-end", dest="vend", type=int,
+                           help="The number of the last volume for converting")
     args = argparser.parse_args()
 
     if (args.start and args.end) and (args.start > args.end):
@@ -30,7 +31,7 @@ def main():
         print("The volume with number 0 doesn't exists!")
 
     trace("Searching {}...".format(args.url))
-    manga = parser.Manga(args.url)  
+    manga = parser.Manga(args.url)
 
     DEFAULT_START = args.start or 1
     DEFAULT_END = args.end or manga.ch_count
@@ -50,7 +51,7 @@ def main():
             if len(ch_nums) <= 1:
                 info(f"{vol_num}: only {ch_nums[0]} chapter.")
                 continue
-            info(f"{vol_num}: {ch_nums[0]}-{ch_nums[-1]} chapter.")                
+            info(f"{vol_num}: {ch_nums[0]}-{ch_nums[-1]} chapter.")
         return
 
     if not args.pdf_only:
@@ -59,9 +60,11 @@ def main():
 
     if args.pdf or args.pdf_only:
         trace("Converting...")
-        
+
         for vol_num in range(DEFAULT_VSTART, DEFAULT_VEND + 1):
-            create_pdf(manga, manga.name, PDF_FILE_NAME.format(manga.name, vol_num), vol_num)
+            create_pdf(manga, manga.name, PDF_FILE_NAME.format(
+                manga.name, vol_num), vol_num)
+
 
 if __name__ == '__main__':
     main()
